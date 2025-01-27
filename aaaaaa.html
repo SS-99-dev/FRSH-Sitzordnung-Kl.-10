@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sitzordnung</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
+        .classroom {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            justify-content: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .section {
+            display: grid;
+            gap: 10px;
+        }
+        .left {
+            grid-template-columns: repeat(5, 50px);
+        }
+        .left-back {
+            grid-template-columns: repeat(6, 50px);
+        }
+        .right {
+            grid-template-columns: repeat(4, 50px);
+        }
+        .seat {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f0f0;
+            font-size: 14px;
+        }
+        .seat.occupied {
+            background-color: #;
+        }
+        h3 {
+            margin-bottom: 10px;
+            text-decoration: underline;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sitzordnung - Zufällige Verteilung</h1>
+    <div class="classroom">
+        <!-- Vorne -->
+        <div>
+            <h3>Vorne links</h3>
+            <div class="section left" id="front-left">
+                <div class="seat" data-row="front-left" data-col="1"></div>
+                <div class="seat" data-row="front-left" data-col="2"></div>
+                <div class="seat" data-row="front-left" data-col="3"></div>
+                <div class="seat" data-row="front-left" data-col="4"></div>
+                <div class="seat" data-row="front-left" data-col="5"></div>
+            </div>
+        </div>
+        <div>
+            <h3>Vorne rechts</h3>
+            <div class="section right" id="front-right">
+                <div class="seat" data-row="front-right" data-col="1"></div>
+                <div class="seat" data-row="front-right" data-col="2"></div>
+                <div class="seat" data-row="front-right" data-col="3"></div>
+                <div class="seat" data-row="front-right" data-col="4"></div>
+            </div>
+        </div>
+
+        <!-- Mitte -->
+        <div>
+            <h3>Mitte links</h3>
+            <div class="section left" id="middle-left">
+                <div class="seat" data-row="middle-left" data-col="1"></div>
+                <div class="seat" data-row="middle-left" data-col="2"></div>
+                <div class="seat" data-row="middle-left" data-col="3"></div>
+                <div class="seat" data-row="middle-left" data-col="4"></div>
+                <div class="seat" data-row="middle-left" data-col="5"></div>
+            </div>
+        </div>
+        <div>
+            <h3>Mitte rechts</h3>
+            <div class="section right" id="middle-right">
+                <div class="seat" data-row="middle-right" data-col="1"></div>
+                <div class="seat" data-row="middle-right" data-col="2"></div>
+                <div class="seat" data-row="middle-right" data-col="3"></div>
+                <div class="seat" data-row="middle-right" data-col="4"></div>
+            </div>
+        </div>
+
+        <!-- Hinten -->
+        <div>
+            <h3>Hinten links</h3>
+            <div class="section left-back" id="back-left">
+                <div class="seat" data-row="back-left" data-col="1"></div>
+                <div class="seat" data-row="back-left" data-col="2"></div>
+                <div class="seat" data-row="back-left" data-col="3"></div>
+                <div class="seat" data-row="back-left" data-col="4"></div>
+                <div class="seat" data-row="back-left" data-col="5"></div>
+                <div class="seat" data-row="back-left" data-col="6"></div>
+            </div>
+        </div>
+        <div>
+            <h3>Hinten rechts</h3>
+            <div class="section right" id="back-right">
+                <div class="seat" data-row="back-right" data-col="1"></div>
+                <div class="seat" data-row="back-right" data-col="2"></div>
+                <div class="seat" data-row="back-right" data-col="3"></div>
+                <div class="seat" data-row="back-right" data-col="4"></div>
+            </div>
+        </div>
+    </div>
+    <button onclick="assignSeats()">Zufällige Plätze auslosen</button>
+
+    <script>
+        function assignSeats() {
+            const seats = document.querySelectorAll('.seat');
+            const students = [
+                "Marielena", "Lucas", "Niklas", "Marcel", "Jan", "Elias", "Simon", "Samuel", 
+                "Liones", "Finn", "Fynn", "Robin", "Elinor", "Helen", "Paul", "Quentin",
+                "Anny", "Mia", "Maren", "Lea", "Lara", "Malin", "Niela",
+                "Pauline", "Saphira", "Marie S.", "Marie H.", "Judith"
+            ];
+
+            // Leere alle Sitzplätze
+            seats.forEach(seat => {
+                seat.textContent = "";
+                seat.classList.remove("occupied");
+            });
+
+            // Schüler zufällig auf die Plätze verteilen
+            students.forEach((student, index) => {
+                let assigned = false;
+
+                while (!assigned) {
+                    const randomSeat = seats[Math.floor(Math.random() * seats.length)];
+                    const row = randomSeat.dataset.row;
+
+                    // Die erste Schülerin darf nur vorne oder in der mittleren Reihe sitzen
+                    if (index === 0 && row.includes("back")) continue;
+
+                    if (!randomSeat.textContent) {
+                        randomSeat.textContent = student;
+                        randomSeat.classList.add("occupied");
+                        assigned = true;
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
