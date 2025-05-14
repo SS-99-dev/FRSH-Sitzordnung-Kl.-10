@@ -124,42 +124,127 @@
         </div>
     </div>
     <button onclick="assignSeats()">Zufällige Plätze auslosen</button>
+<script>
+    function assignSeats() {
+        const seats = Array.from(document.querySelectorAll('.seat'));
+        const students = [
+            { name: "Marielena", gender: "f" }, { name: "Lucas", gender: "m" },
+            { name: "Niklas", gender: "m" }, { name: "Marcel", gender: "m" },
+            { name: "Jan", gender: "m" }, { name: "Elias", gender: "m" },
+            { name: "Simon", gender: "m" }, { name: "Samuel", gender: "m" },
+            { name: "Liones", gender: "m" }, { name: "Finn-Uwe", gender: "m" },
+            { name: "Fynn", gender: "m" }, { name: "Robin", gender: "m" },
+            { name: "Elinor", gender: "f" }, { name: "Helen", gender: "f" },
+            { name: "Amy", gender: "f" }, { name: "Jette", gender: "f" },
+            { name: "Anny", gender: "f" }, { name: "Mia", gender: "f" },
+            { name: "Maren", gender: "f" }, { name: "Lea", gender: "f" },
+            { name: "Lara", gender: "f" }, { name: "Malin", gender: "f" },
+            { name: "Niela", gender: "f" }, { name: "Pauline", gender: "f" },
+            { name: "Saphira", gender: "f" }, { name: "Marie S.", gender: "f" },
+            { name: "Marie H.", gender: "f" }, { name: "Judith", gender: "f" }
+        ];
 
-    <script>
-        function assignSeats() {
-            const seats = document.querySelectorAll('.seat');
-            const students = [
-                "Marielena", "Lucas", "Niklas", "Marcel", "Jan", "Elias", "Simon", "Samuel", 
-                "Liones", "Finn-Uwe", "Fynn", "Robin", "Elinor", "Helen", "Amy", "Jette",
-                "Anny", "Mia", "Maren", "Lea", "Lara", "Malin", "Niela",
-                "Pauline", "Saphira", "Marie S.", "Marie H.", "Judith"
-            ];
+        const group1 = ["Jan", "Fynn", "Liones", "Robin"];
+        const group2 = ["Samuel", "Lucas", "Marcel", "Niklas"];
 
-            // Leere alle Sitzplätze
-            seats.forEach(seat => {
-                seat.textContent = "";
-                seat.classList.remove("occupied");
-            });
+        const frontAndMiddle = ['front-left', 'front-right', 'middle-left', 'middle-right'];
 
-            // Schüler zufällig auf die Plätze verteilen
-            students.forEach((student, index) => {
-                let assigned = false;
+        // Leere alle Plätze
+        seats.forEach(seat => {
+            seat.textContent = "";
+            seat.classList.remove("occupied");
+        });
 
-                while (!assigned) {
-                    const randomSeat = seats[Math.floor(Math.random() * seats.length)];
-                    const row = randomSeat.dataset.row;
+        let success = false;
 
-                    // Die erste Schülerin darf nur vorne oder in der mittleren Reihe sitzen
-                    if (index === 0 && row.includes("back")) continue;
+        while (!success) {
+            const shuffled = [...students].sort(() => Math.random() - 0.5);
+            const prob = Math.random();
+            const girlsTogether = prob < 0.6;
+            const group1Together = prob >= 0.6 && prob < 0.8;
+            const group2Together = prob >= 0.8 && prob < 1.0;
 
-                    if (!randomSeat.textContent) {
-                        randomSeat.textContent = student;
-                        randomSeat.classList.add("occupied");
-                        assigned = true;
+            const seatChunks = chunkArray(seats, 4);
+            const assigned = [];
+            const usedSeats = new Set();
+
+            // Platzierung von Marielena in den vorderen Reihen
+            const marielenaSeat = seats.find(seat =>
+                frontAndMiddle.includes(seat.dataset.row) && !seat.textContent
+            );
+            if (!marielenaSeat) continue;
+            marielenaSeat.textContent = "Marielena";
+            marielenaSeat.classList.add("occupied");
+            assigned.push("Marielena");
+            usedSeats.add(marielenaSeat);
+
+            function placeGroup(groupNames) {
+                for (let chunk of shuffleArray(seatChunks)) {
+                    if (chunk.every(seat => !seat.textContent)) {
+                        for (let i = 0; i < groupNames.length; i++) {
+                            const student = shuffled.find(s => s.name === groupNames[i]);
+                            if (!student) return false;
+                            chunk[i].textContent = student.name;
+                            chunk[i].classList.add("occupied");
+                            assigned.push(student.name);
+                            usedSeats.add(chunk[i]);
+                        }
+                        return true;
                     }
                 }
-            });
+                return false;
+            }
+
+            if ((group1Together && !placeGroup(group1)) || (group2Together && !placeGroup(group2))) continue;
+
+            // Gruppiere Mädchen, wenn aktiviert (außer Marielena)
+            if (girlsTogether) {
+                const girls = shuffled.filter(s => s.gender === "f" && s.name !== "Marielena");
+                const girlChunks = chunkArray(girls, 4);
+                for (let chunk of girlChunks) {
+                    if (chunk.length < 2) continue;
+                    for (let seatGroup of shuffleArray(seatChunks)) {
+                        if (seatGroup.every(seat => !seat.textContent)) {
+                            for (let i = 0; i < chunk.length; i++) {
+                                seatGroup[i].textContent = chunk[i].name;
+                                seatGroup[i].classList.add("occupied");
+                                assigned.push(chunk[i].name);
+                                usedSeats.add(seatGroup[i]);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Verbleibende Schüler zufällig platzieren
+            for (const student of shuffled) {
+                if (assigned.includes(student.name)) continue;
+                const free = seats.find(seat => !seat.textContent);
+                if (!free) break;
+                free.textContent = student.name;
+                free.classList.add("occupied");
+                usedSeats.add(free);
+                assigned.push(student.name);
+            }
+
+            success = true;
         }
-    </script>
+
+        // Hilfsfunktionen
+        function chunkArray(arr, size) {
+            const res = [];
+            for (let i = 0; i < arr.length; i += size) {
+                res.push(arr.slice(i, i + size));
+            }
+            return res;
+        }
+
+        function shuffleArray(array) {
+            return array.slice().sort(() => Math.random() - 0.5);
+        }
+    }
+</script>
+
 </body>
 </html>
