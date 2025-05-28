@@ -162,7 +162,7 @@
             const prob = Math.random();
             const girlsTogether = prob < 0.6;
             const group1Together = prob >= 0.6 && prob < 0.8;
-            const group2Together = prob >= 0.8 && prob < 1.0;
+            const group2Together = prob >= 0.5 && prob < 0.8;
 
             const seatChunks = chunkArray(seats, 4);
             const assigned = [];
